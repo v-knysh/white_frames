@@ -26,7 +26,7 @@ class ImageABC(ABC):
         pass
 
     @abstractmethod
-    def save(self):
+    def save(self, filename):
         pass
 
 

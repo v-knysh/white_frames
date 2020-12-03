@@ -1,36 +1,28 @@
+from PIL import Image
+
 from make_frame import ImageABC, ExpandCanvasParams
 
 
-class TestImage(ImageABC):
-    def __init__(self, height, width, **kwargs):
-        self._height = height
-        self._width = width
+class PilImage(ImageABC):
+    def __init__(self, image: Image.Image):
+        self._image = image
+
+    @classmethod
+    def open(cls, filename):
+        return cls(Image.open(filename))
 
     def width(self) -> int:
-        return self._width
+        return self._image.width
 
     def height(self) -> int:
-        return self._height
+        return self._image.height
 
-    def expand_canvas(self, new_height: int, new_width: int, params: ExpandCanvasParams) -> ImageABC:
+    def expand_canvas(self, new_height: int, new_width: int, params: ExpandCanvasParams) -> 'ImageABC':
+        new_image = Image.new(self._image.mode, (new_width, new_height), (255,255,255))
         coord_h = params.coord_h(new_height)
         coord_w = params.coord_w(new_height)
-        return ExpandedTestImage(new_height, new_width, coord_h, coord_w)
+        new_image.paste(self._image, (coord_w, coord_h))
+        return PilImage(new_image)
 
-    def save(self):
-        pass
-
-    def __repr__(self):
-        return f"<TestImage height={self._height} width={self._width}>"
-
-
-class ExpandedTestImage(TestImage):
-    def __init__(self, height, width, coord_h, coord_w):
-        super().__init__(height, width)
-        self._height = height
-        self._width = width
-        self._coord_h = coord_h
-        self._coord_w = coord_w
-
-    def __repr__(self):
-        return f"<ExpandedTestImage height={self._height} width={self._width} coord_h={self._coord_h} coord_w={self._coord_w}>"
+    def save(self, filename):
+        self._image.save(filename)
