@@ -2,7 +2,8 @@ from make_frame import ImageProcessorABC, ImageABC, ExpandCanvasParamsFactoryABC
 
 fotovramke_default_height = 2075
 fotovramke_default_width = 3130
-thin_border_multiplier = 3246 / fotovramke_default_width
+fotovramke_result_width = 3246
+thin_border_multiplier = fotovramke_result_width / fotovramke_default_width
 
 
 class BaseImageProcessor:
@@ -22,14 +23,18 @@ class PortraitImageProcessor(BaseImageProcessor, ImageProcessorABC):
 
 class SquareImageProcessor(BaseImageProcessor, ImageProcessorABC):
     def image_with_frame(self) -> ImageABC:
-        return self._image
+        biggest_side = max(self._image.height(), self._image.width())
+        new_height = new_width = int(biggest_side * thin_border_multiplier)
+
+        return self._image.expand_canvas(new_height, new_width,
+                                         self._params_factory.params(self._image, ExpandCanvasParamsType.CENTER))
 
 
 class LandscaipImageProcessor(BaseImageProcessor, ImageProcessorABC):
     def image_with_frame(self) -> ImageABC:
-        new_height = new_width = int(self._image.height() * thin_border_multiplier)
+        new_height = new_width = int(self._image.width() * thin_border_multiplier)
         return self._image.expand_canvas(new_height, new_width,
-                                         self._params_factory.params(self._image, ExpandCanvasParamsType.CENTER))
+                                         self._params_factory.params(self._image, ExpandCanvasParamsType.GOLDEN_RATIO))
 
 
 class ImageProcessorFactory:

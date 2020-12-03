@@ -4,11 +4,11 @@ from enum import Enum
 
 class ExpandCanvasParams(ABC):
     @abstractmethod
-    def coord_h(self, new_height):
+    def coord_h(self, new_height) -> int:
         pass
 
     @abstractmethod
-    def coord_w(self, new_width):
+    def coord_w(self, new_width) -> int:
         pass
 
 

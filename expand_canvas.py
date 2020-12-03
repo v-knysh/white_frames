@@ -5,11 +5,11 @@ class CenterExpandParams(ExpandCanvasParams):
     def __init__(self, source_image: ImageABC):
         self._image = source_image
 
-    def coord_h(self, new_height):
-        return (new_height - self._image.height()) / 2
+    def coord_h(self, new_height) -> int:
+        return int((new_height - self._image.height()) / 2)
 
-    def coord_w(self, new_width):
-        return (new_width - self._image.width()) / 2
+    def coord_w(self, new_width) -> int:
+        return int((new_width - self._image.width()) / 2)
 
 
 class GoldenRatioParams(ExpandCanvasParams):
@@ -18,11 +18,11 @@ class GoldenRatioParams(ExpandCanvasParams):
     def __init__(self, source_image: ImageABC):
         self._image = source_image
 
-    def coord_h(self, new_height):
-        return (new_height - self._image.height()) * self.GOLDEN_RATIO ** 2
+    def coord_h(self, new_height) -> int:
+        return int((new_height - self._image.height()) * (self.GOLDEN_RATIO ** -2))
 
-    def coord_w(self, new_width):
-        return (new_width - self._image.width()) / 2
+    def coord_w(self, new_width) -> int:
+        return int((new_width - self._image.width()) / 2)
 
 
 class ExpandCanvasParamsFactory(ExpandCanvasParamsFactoryABC):
