@@ -1,9 +1,5 @@
-from make_frame import ImageProcessorABC, ImageABC, ExpandCanvasParamsFactoryABC, ExpandCanvasParamsType
-
-fotovramke_default_height = 2075
-fotovramke_default_width = 3130
-fotovramke_result_width = 3246
-thin_border_multiplier = fotovramke_result_width / fotovramke_default_width
+from image_processing import ImageProcessorABC, ImageABC, ExpandCanvasParamsFactoryABC, ExpandCanvasParamsType, \
+    FV_MULTIPLIER
 
 
 class BaseImageProcessor:
@@ -13,26 +9,26 @@ class BaseImageProcessor:
 
 
 class PortraitImageProcessor(BaseImageProcessor, ImageProcessorABC):
-    def image_with_frame(self) -> ImageABC:
+    def image_with_frame(self, multiplier: float = FV_MULTIPLIER) -> ImageABC:
         height = self._image.height()
-        new_height = new_width = int(height * thin_border_multiplier)
+        new_height = new_width = int(height * multiplier)
 
         return self._image.expand_canvas(new_height, new_width,
                                          self._params_factory.params(self._image, ExpandCanvasParamsType.CENTER))
 
 
 class SquareImageProcessor(BaseImageProcessor, ImageProcessorABC):
-    def image_with_frame(self) -> ImageABC:
+    def image_with_frame(self, multiplier: float = FV_MULTIPLIER) -> ImageABC:
         biggest_side = max(self._image.height(), self._image.width())
-        new_height = new_width = int(biggest_side * thin_border_multiplier)
+        new_height = new_width = int(biggest_side * multiplier)
 
         return self._image.expand_canvas(new_height, new_width,
                                          self._params_factory.params(self._image, ExpandCanvasParamsType.CENTER))
 
 
 class LandscaipImageProcessor(BaseImageProcessor, ImageProcessorABC):
-    def image_with_frame(self) -> ImageABC:
-        new_height = new_width = int(self._image.width() * thin_border_multiplier)
+    def image_with_frame(self, multiplier: float = FV_MULTIPLIER) -> ImageABC:
+        new_height = new_width = int(self._image.width() * multiplier)
         return self._image.expand_canvas(new_height, new_width,
                                          self._params_factory.params(self._image, ExpandCanvasParamsType.GOLDEN_RATIO))
 

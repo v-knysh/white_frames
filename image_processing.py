@@ -2,6 +2,13 @@ from abc import ABC, abstractmethod
 from enum import Enum
 
 
+
+fotovramke_default_height = 2075
+fotovramke_default_width = 3130
+fotovramke_result_width = 3246
+FV_MULTIPLIER = fotovramke_result_width / fotovramke_default_width
+
+
 class ExpandCanvasParams(ABC):
     @abstractmethod
     def coord_h(self, new_height) -> int:
@@ -32,7 +39,7 @@ class ImageABC(ABC):
 
 class ImageProcessorABC(ABC):
     @abstractmethod
-    def image_with_frame(self) -> ImageABC:
+    def image_with_frame(self, multiplier: float = FV_MULTIPLIER) -> ImageABC:
         pass
 
 

@@ -1,6 +1,6 @@
 from PIL import Image
 
-from make_frame import ImageABC, ExpandCanvasParams
+from image_processing import ImageABC, ExpandCanvasParams
 
 
 class PilImage(ImageABC):
