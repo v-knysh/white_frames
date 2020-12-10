@@ -1,13 +1,14 @@
 import argparse
 import os
 
-from PIL import Image
-
+import logging
 
 from expand_canvas import ExpandCanvasParamsFactory
 from image import PilImage
-from image_processing import FV_MULTIPLIER
+from image_processing import FV_MULTIPLIER, NotAnImageException
 from processors import ImageProcessorFactory
+
+logger = logging.getLogger('')
 
 parser = argparse.ArgumentParser(description="Adds white frame to image to make it suitable for _metavlad's instagram")
 
@@ -29,10 +30,11 @@ parser.add_argument(
 
 
 def process_file(content_path, multiplier, destination=None):
+    logger.info(f"processing file '{content_path}'")
     try:
-        image = PilImage(Image.open(content_path))
-    except Exception:
-        print('a')
+        image = PilImage.open(content_path)
+    except NotAnImageException:
+        logger.warning(f"cannot process file {content_path}. it is not an image")
         return
     processor = ImageProcessorFactory(ExpandCanvasParamsFactory()).processor(image)
     image_with_frame = processor.image_with_frame(multiplier=multiplier)
@@ -43,9 +45,10 @@ def process_file(content_path, multiplier, destination=None):
 
 
 def process_dir(content_path, multiplier):
+    logger.info(f"processing dir '{content_path}'")
     result_dir_name = os.path.join(content_path, 'square_images')
+    logger.info(f'putting results to {result_dir_name}')
     if not os.path.isdir(result_dir_name):
-        print(f'putting results to {result_dir_name}')
         os.mkdir(result_dir_name)
     for file in os.listdir(content_path):
         root_file = os.path.join(content_path, file)
@@ -60,15 +63,7 @@ if __name__ == "__main__":
     multiplier = args.multiplier
 
     if os.path.isfile(content_path):
-       process_file(content_path, multiplier)
+        process_file(content_path, multiplier)
 
     elif os.path.isdir(content_path):
         process_dir(content_path, multiplier)
-
-
-
-    # filename = 'fitolampa-s-klipsoi--fitosvetilnik-dlya-vazonov-s-photo-ec4f.jpg'
-    # image = PilImage(Image.open(filename))
-    # processor = ImageProcessorFactory(ExpandCanvasParamsFactory()).processor(image)
-    # image_with_frame = processor.image_with_frame(multiplier=2)
-    # image_with_frame.save('test.jpg')

@@ -37,6 +37,10 @@ class ImageABC(ABC):
         pass
 
 
+class NotAnImageException(BaseException):
+    pass
+
+
 class ImageProcessorABC(ABC):
     @abstractmethod
     def image_with_frame(self, multiplier: float = FV_MULTIPLIER) -> ImageABC:

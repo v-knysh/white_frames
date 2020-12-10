@@ -1,6 +1,6 @@
-from PIL import Image
+from PIL import Image, UnidentifiedImageError, ExifTags
 
-from image_processing import ImageABC, ExpandCanvasParams
+from image_processing import ImageABC, ExpandCanvasParams, NotAnImageException
 
 
 class PilImage(ImageABC):
@@ -9,7 +9,43 @@ class PilImage(ImageABC):
 
     @classmethod
     def open(cls, filename):
-        return cls(Image.open(filename))
+        try:
+            image = Image.open(filename)
+        except UnidentifiedImageError:
+            raise NotAnImageException()
+
+        image = cls.apply_tagged_rotation(image)
+
+        return cls(image)
+
+    @classmethod
+    def apply_tagged_rotation(cls, image):
+        if not hasattr(image, '_getexif'):  # only present in JPEGs
+            return image
+
+        orientation_tag = cls._exif_orientation_tag()
+
+        exif = image._getexif()  # returns None if no EXIF data
+        if exif is None:
+            return image
+
+        orientation = exif[orientation_tag]
+
+        if orientation == 3:
+            image = image.transpose(Image.ROTATE_180)
+        elif orientation == 6:
+            image = image.transpose(Image.ROTATE_270)
+        elif orientation == 8:
+            image = image.transpose(Image.ROTATE_90)
+        return image
+
+    @classmethod
+    def _exif_orientation_tag(cls):
+        orientation = None
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation] == 'Orientation':
+                break
+        return orientation
 
     def width(self) -> int:
         return self._image.width
