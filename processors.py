@@ -1,5 +1,5 @@
 from image_processing import ImageProcessorABC, ImageABC, ExpandCanvasParamsFactoryABC, ExpandCanvasParamsType, \
-    FV_MULTIPLIER
+    FV_BORDER_THICKNESS_MULTIPLIER
 
 
 class BaseImageProcessor:
@@ -9,26 +9,26 @@ class BaseImageProcessor:
 
 
 class PortraitImageProcessor(BaseImageProcessor, ImageProcessorABC):
-    def image_with_frame(self, multiplier: float = FV_MULTIPLIER) -> ImageABC:
+    def image_with_frame(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
         height = self._image.height()
-        new_height = new_width = int(height * multiplier)
+        new_height = new_width = int(height * border_thickness_multiplier)
 
         return self._image.expand_canvas(new_height, new_width,
                                          self._params_factory.params(self._image, ExpandCanvasParamsType.CENTER))
 
 
 class SquareImageProcessor(BaseImageProcessor, ImageProcessorABC):
-    def image_with_frame(self, multiplier: float = FV_MULTIPLIER) -> ImageABC:
+    def image_with_frame(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
         biggest_side = max(self._image.height(), self._image.width())
-        new_height = new_width = int(biggest_side * multiplier)
+        new_height = new_width = int(biggest_side * border_thickness_multiplier)
 
         return self._image.expand_canvas(new_height, new_width,
                                          self._params_factory.params(self._image, ExpandCanvasParamsType.CENTER))
 
 
-class LandscaipImageProcessor(BaseImageProcessor, ImageProcessorABC):
-    def image_with_frame(self, multiplier: float = FV_MULTIPLIER) -> ImageABC:
-        new_height = new_width = int(self._image.width() * multiplier)
+class LandscapeImageProcessor(BaseImageProcessor, ImageProcessorABC):
+    def image_with_frame(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
+        new_height = new_width = int(self._image.width() * border_thickness_multiplier)
         return self._image.expand_canvas(new_height, new_width,
                                          self._params_factory.params(self._image, ExpandCanvasParamsType.GOLDEN_RATIO))
 
@@ -42,6 +42,6 @@ class ImageProcessorFactory:
         if rate > 1.1:
             return PortraitImageProcessor(image, self._params_factory)
         elif rate < 0.9:
-            return LandscaipImageProcessor(image, self._params_factory)
+            return LandscapeImageProcessor(image, self._params_factory)
         else:
             return SquareImageProcessor(image, self._params_factory)

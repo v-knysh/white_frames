@@ -5,7 +5,7 @@ import logging
 
 from expand_canvas import ExpandCanvasParamsFactory
 from image import PilImage
-from image_processing import FV_MULTIPLIER, NotAnImageException
+from image_processing import FV_BORDER_THICKNESS_MULTIPLIER, NotAnImageException
 from processors import ImageProcessorFactory
 
 logger = logging.getLogger('')
@@ -24,7 +24,7 @@ parser.add_argument(
     '-m', '--multiplier',
     type=float,
     help='percent size for porder',
-    default=FV_MULTIPLIER,
+    default=FV_BORDER_THICKNESS_MULTIPLIER,
     dest='multiplier',
 )
 
@@ -37,7 +37,7 @@ def process_file(content_path, multiplier, destination=None):
         logger.warning(f"cannot process file {content_path}. it is not an image")
         return
     processor = ImageProcessorFactory(ExpandCanvasParamsFactory()).processor(image)
-    image_with_frame = processor.image_with_frame(multiplier=multiplier)
+    image_with_frame = processor.image_with_frame(border_thickness_multiplier=multiplier)
     if destination is None:
         file_name, file_extension = os.path.splitext(content_path)
         destination = f'{file_name}-square.{file_extension}'
@@ -54,7 +54,6 @@ def process_dir(content_path, multiplier):
         root_file = os.path.join(content_path, file)
         if os.path.isfile(root_file):
             process_file(root_file, multiplier, destination=os.path.join(result_dir_name, file))
-
 
 
 if __name__ == "__main__":

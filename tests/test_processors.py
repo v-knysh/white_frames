@@ -43,7 +43,7 @@ class FotovramkeTestCase(unittest.TestCase):
         self.assertEqual(image_with_frame.height(), fotovramke_result_width)
 
 
-class ColdenRatioTestCase(unittest.TestCase):
+class GoldenRatioTestCase(unittest.TestCase):
     def test_golden_ratio_landscape(self):
         image_processor_factory = ImageProcessorFactory(ExpandCanvasParamsFactory())
         image = TestImage(height=fotovramke_default_height, width=fotovramke_default_width)

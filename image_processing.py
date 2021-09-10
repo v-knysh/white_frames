@@ -6,7 +6,7 @@ from enum import Enum
 fotovramke_default_height = 2075
 fotovramke_default_width = 3130
 fotovramke_result_width = 3246
-FV_MULTIPLIER = fotovramke_result_width / fotovramke_default_width
+FV_BORDER_THICKNESS_MULTIPLIER = fotovramke_result_width / fotovramke_default_width
 
 
 class ExpandCanvasParams(ABC):
@@ -43,14 +43,13 @@ class NotAnImageException(BaseException):
 
 class ImageProcessorABC(ABC):
     @abstractmethod
-    def image_with_frame(self, multiplier: float = FV_MULTIPLIER) -> ImageABC:
+    def image_with_frame(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
         pass
 
 
 class ExpandCanvasParamsType(Enum):
     CENTER = 'center'
     GOLDEN_RATIO = 'golden_ratio'
-
 
 
 class ExpandCanvasParamsFactoryABC(ABC):
