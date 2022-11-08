@@ -1,4 +1,9 @@
-from image_processing import ExpandCanvasParams, ImageABC, ExpandCanvasParamsFactoryABC, ExpandCanvasParamsType
+from frames.image_processing import (
+    ExpandCanvasParams,
+    ImageABC,
+    ExpandCanvasParamsFactoryABC,
+    ExpandCanvasParamsType
+)
 
 
 class CenterExpandParams(ExpandCanvasParams):

@@ -1,5 +1,10 @@
-from image_processing import ImageProcessorABC, ImageABC, ExpandCanvasParamsFactoryABC, ExpandCanvasParamsType, \
+from frames.image_processing import (
+    ImageProcessorABC,
+    ImageABC,
+    ExpandCanvasParamsFactoryABC,
+    ExpandCanvasParamsType,
     FV_BORDER_THICKNESS_MULTIPLIER
+)
 
 
 class BaseImageProcessor:

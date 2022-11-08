@@ -1,6 +1,10 @@
 from PIL import Image, UnidentifiedImageError, ExifTags
 
-from image_processing import ImageABC, ExpandCanvasParams, NotAnImageException
+from frames.image_processing import (
+    ImageABC,
+    ExpandCanvasParams,
+    NotAnImageException
+)
 
 
 class PilImage(ImageABC):

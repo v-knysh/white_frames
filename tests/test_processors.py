@@ -1,9 +1,9 @@
 import unittest
 
-from expand_canvas import ExpandCanvasParamsFactory
-from test_image import TestImage
-from processors import ImageProcessorFactory
-from image_processing import fotovramke_default_height, fotovramke_default_width, fotovramke_result_width
+from frames.expand_canvas import ExpandCanvasParamsFactory
+from tests.test_image import TestImage
+from frames.processors import ImageProcessorFactory
+from frames.image_processing import fotovramke_default_height, fotovramke_default_width, fotovramke_result_width
 
 
 class FotovramkeTestCase(unittest.TestCase):

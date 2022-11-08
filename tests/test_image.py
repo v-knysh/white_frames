@@ -1,4 +1,4 @@
-from image_processing import ImageABC, ExpandCanvasParams
+from frames.image_processing import ImageABC, ExpandCanvasParams
 
 
 class TestImage(ImageABC):
