@@ -1,3 +1,4 @@
+from io import BytesIO
 from PIL import Image, UnidentifiedImageError, ExifTags
 
 from frames.image_processing import (
