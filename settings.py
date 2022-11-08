@@ -1,6 +1,6 @@
 import os
 
-MODE = "CLI"
+MODE = os.environ.get("MODE", "CLI")
 TG_BOT_API_TOKEN = os.environ.get("TG_BOT_API_TOKEN", "TG_BOT_API_TOKEN")
 HEROKU_APP_NAME = os.environ.get("HEROKU_APP_NAME", "HEROKU_APP_NAME")
 
