@@ -1,4 +1,3 @@
-from io import BytesIO
 from PIL import Image, UnidentifiedImageError, ExifTags
 
 from frames.image_processing import (
@@ -34,7 +33,7 @@ class PilImage(ImageABC):
         if exif is None:
             return image
 
-        orientation = exif[orientation_tag]
+        orientation = exif.get(orientation_tag)
 
         if orientation == 3:
             image = image.transpose(Image.ROTATE_180)

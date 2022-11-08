@@ -1,3 +1,4 @@
+from ast import Bytes
 from io import BytesIO
 from aiogram import types
 from bot.bot import dp, bot
@@ -6,18 +7,23 @@ from frames.image import PilImage
 from frames.image_processing import FV_BORDER_THICKNESS_MULTIPLIER
 from frames.processors import ImageProcessorFactory
 
-@dp.message_handler(content_types=['photo'])
+@dp.message_handler(content_types=['photo', 'document'])
 async def image_handler(message: types.Message):
-    await message.answer("received_image")
-    file_id = message.photo[-1].file_id
+    if message.photo:
+        file_id = message.photo[-1].file_id
+    if message.document:
+        file_id = message.document.file_id
     file = await bot.get_file(file_id)
-    result = await bot.download_file(file.file_path)
-    result.seek(0)
+    origin_image = await bot.download_file(file.file_path)
+    origin_image.seek(0)
 
-    image = PilImage.open(result)
+    image = PilImage.open(origin_image)
     processor = ImageProcessorFactory(ExpandCanvasParamsFactory()).processor(image)
     image_with_frame = processor.image_with_frame(border_thickness_multiplier=FV_BORDER_THICKNESS_MULTIPLIER)
-    image_with_frame.save('result.jpg')
+    response = BytesIO()
+    response.name = "result.jpg"
+    image_with_frame.save(response)
+    response.seek(0)
     
-    await message.answer_photo(types.InputFile("result.jpg"))   
+    await message.answer_document(types.InputFile(response))   
 
