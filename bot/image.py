@@ -9,6 +9,8 @@ from frames.processors import ImageProcessorFactory
 
 @dp.message_handler(content_types=['photo', 'document'])
 async def image_handler(message: types.Message):
+    await message.reply("Received image. Processing...")
+    logging.warning(f'Recieved a image from {message.from_user}')
     if message.photo:
         file_id = message.photo[-1].file_id
     if message.document:
