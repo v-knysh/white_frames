@@ -1,11 +1,15 @@
+import logging
 from ast import Bytes
 from io import BytesIO
+
 from aiogram import types
+
 from bot.bot import dp, bot
 from frames.expand_canvas import ExpandCanvasParamsFactory
 from frames.image import PilImage
 from frames.image_processing import FV_BORDER_THICKNESS_MULTIPLIER
 from frames.processors import ImageProcessorFactory
+
 
 @dp.message_handler(content_types=['photo', 'document'])
 async def image_handler(message: types.Message):
