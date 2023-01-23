@@ -38,11 +38,19 @@ class LandscapeImageProcessor(BaseImageProcessor, ImageProcessorABC):
                                          self._params_factory.params(self._image, ExpandCanvasParamsType.GOLDEN_RATIO))
 
 
+
+class DistortImageProcessor(BaseImageProcessor, ImageProcessorABC):
+    def image_with_frame(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
+        new_height = new_width = int(self._image.width() * border_thickness_multiplier)
+        return self._image.distort()
+
+
 class ImageProcessorFactory:
     def __init__(self, params_factory: ExpandCanvasParamsFactoryABC):
         self._params_factory = params_factory
 
     def processor(self, image: ImageABC) -> ImageProcessorABC:
+        return DistortImageProcessor(image, self._params_factory)
         rate = image.height() / image.width()
         if rate > 1.1:
             return PortraitImageProcessor(image, self._params_factory)
@@ -50,3 +58,4 @@ class ImageProcessorFactory:
             return LandscapeImageProcessor(image, self._params_factory)
         else:
             return SquareImageProcessor(image, self._params_factory)
+

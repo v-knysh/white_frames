@@ -36,6 +36,9 @@ class ImageABC(ABC):
     def save(self, filename):
         pass
 
+    @abstractmethod
+    def distort(self) -> 'ImageABC':
+        pass
 
 class NotAnImageException(BaseException):
     pass

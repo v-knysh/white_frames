@@ -8,6 +8,8 @@ verify_ssl = true
 [packages]
 pillow = "==8.0.1"
 aiogram = "2.23.1"
+numpy = "*"
+opencv-python = "*"
 
 [requires]
 python_version = "3.10"
