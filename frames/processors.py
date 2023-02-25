@@ -14,7 +14,7 @@ class BaseImageProcessor:
 
 
 class PortraitImageProcessor(BaseImageProcessor, ImageProcessorABC):
-    def image_with_frame(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
+    def modified_image(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
         height = self._image.height()
         new_height = new_width = int(height * border_thickness_multiplier)
 
@@ -23,7 +23,7 @@ class PortraitImageProcessor(BaseImageProcessor, ImageProcessorABC):
 
 
 class SquareImageProcessor(BaseImageProcessor, ImageProcessorABC):
-    def image_with_frame(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
+    def modified_image(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
         biggest_side = max(self._image.height(), self._image.width())
         new_height = new_width = int(biggest_side * border_thickness_multiplier)
 
@@ -32,25 +32,25 @@ class SquareImageProcessor(BaseImageProcessor, ImageProcessorABC):
 
 
 class LandscapeImageProcessor(BaseImageProcessor, ImageProcessorABC):
-    def image_with_frame(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
+    def modified_image(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
         new_height = new_width = int(self._image.width() * border_thickness_multiplier)
         return self._image.expand_canvas(new_height, new_width,
                                          self._params_factory.params(self._image, ExpandCanvasParamsType.GOLDEN_RATIO))
 
 
+class DistortImageProcessor(ImageProcessorABC):
+    def __init__(self, source_image: ImageABC):
+        self._image = source_image
 
-class DistortImageProcessor(BaseImageProcessor, ImageProcessorABC):
-    def image_with_frame(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
-        new_height = new_width = int(self._image.width() * border_thickness_multiplier)
+    def modified_image(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
         return self._image.distort()
 
 
-class ImageProcessorFactory:
+class WhiteFrameProcessorFactory:
     def __init__(self, params_factory: ExpandCanvasParamsFactoryABC):
         self._params_factory = params_factory
 
     def processor(self, image: ImageABC) -> ImageProcessorABC:
-        return DistortImageProcessor(image, self._params_factory)
         rate = image.height() / image.width()
         if rate > 1.1:
             return PortraitImageProcessor(image, self._params_factory)
@@ -59,3 +59,7 @@ class ImageProcessorFactory:
         else:
             return SquareImageProcessor(image, self._params_factory)
 
+
+class ShashlikManProcessorFactory:
+    def processor(self, image: ImageABC) -> ImageProcessorABC:
+        return DistortImageProcessor(image)

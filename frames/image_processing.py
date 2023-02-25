@@ -46,7 +46,7 @@ class NotAnImageException(BaseException):
 
 class ImageProcessorABC(ABC):
     @abstractmethod
-    def image_with_frame(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
+    def modified_image(self, border_thickness_multiplier: float = FV_BORDER_THICKNESS_MULTIPLIER) -> ImageABC:
         pass
 
 

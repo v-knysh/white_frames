@@ -1,6 +1,12 @@
+from io import BytesIO, StringIO
 import cv2
 import numpy as np
 from PIL import Image, UnidentifiedImageError, ExifTags, ImageDraw
+
+import pprint
+
+import aiohttp
+import asyncio
 
 from frames.image_processing import (
     ImageABC,
@@ -11,7 +17,34 @@ from frames.image_processing import (
 
 class PilImage(ImageABC):
     def __init__(self, image: Image.Image):
-        self._image = image
+        # loop = asyncio.get_event_loop()
+        # image = loop.run_until_complete(self.get_image())
+        # # raise Exception(image)
+        self._image = image.convert("RGBA")
+        # self._image = image
+
+
+
+        
+    async def get_image(self):     
+        async with aiohttp.request(
+                "POST", "https://tweetpik.com/api/images", 
+                json={"tweetId":"1625224979884216321"},
+                headers={
+                    "Authorization": "fb9390bf-3817-49fd-8690-b9e42eff8964"
+                }
+                ) as response:
+            image_url = (await response.json())['url']
+        async with aiohttp.request('get', image_url) as response:
+            image = Image.open(BytesIO(await response.read()))
+            width, height = image.size
+            new_image = Image.new("RGB", (width, height), (255,255,255))
+            new_image.paste(image, (0, 0))
+            top = (height - height * 0.6) / 2
+            bottom = height - top
+            
+            return new_image.crop((0, top, width, bottom))
+
 
     @classmethod
     def open(cls, filename):
@@ -69,12 +102,9 @@ class PilImage(ImageABC):
     def distort(self) -> 'ImageABC':
         background = Image.open("16400267487971.jpg")
         background = background.convert("RGBA")
-        self._image = self._image.convert("RGBA")
-        print(self._image)
-        roi = ((0, 0), (self._image.width, self._image.height))
-        output = Image.new('RGBA', (background.width, background.height), (255, 255, 255, 255))
-        # output.paste(self._image, (0, 0))
-        # output = Image.open("16400267487971.jpg")
+        monitor_image = self._image.convert("RGBA")
+
+        output = Image.new('RGBA', (background.width, background.height), (255, 255, 255, 0))
 
         draw = ImageDraw.Draw(output)
         
@@ -84,17 +114,14 @@ class PilImage(ImageABC):
         bl_dst = (555, 622)
 
         draw.polygon([tl_dst, tr_dst, br_dst, bl_dst], outline=(0,0,0))
-        # draw.polygon([tl_dst, tr_dst, br_dst, bl_dst])
-
-
-
-        image_cv2 = np.array(self._image)
+        
+        image_cv2 = np.array(monitor_image)
         output_cv2 = np.array(output)
 
         tl = (0, 0,)
-        tr = (self._image.width, 0)
-        br = (self._image.width, self._image.height)
-        bl = (0, self._image.height)
+        tr = (monitor_image.width, 0)
+        br = (monitor_image.width, monitor_image.height)
+        bl = (0, monitor_image.height)
         pts = np.array([bl, br, tr, tl])
 
 
@@ -102,7 +129,6 @@ class PilImage(ImageABC):
 
         pts = np.float32(pts.tolist())
         dst_pts = np.float32(dst_pts.tolist())
-        print(pts, dst_pts)
         M = cv2.getPerspectiveTransform(pts, dst_pts)
         image_size = (output_cv2.shape[1], output_cv2.shape[0])
         warped = cv2.warpPerspective(image_cv2, M, dsize=image_size)
@@ -115,28 +141,16 @@ class PilImage(ImageABC):
         mask = np.zeros_like(output_cv2)
         mask = cv2.drawContours(mask, cnts, 0, (255, 255, 25, 255), cv2.FILLED)
         mask = mask.all(axis=2)
-        import pprint
-        pprint.pprint(image_cv2)
         
         output_cv2[mask, :] = warped[mask, :]
-        pprint.pprint(output_cv2)
-
-        output_cv2[:, :, 3] = (255 * (output_cv2[:, :, :3] != 255).any(axis=2)).astype(np.uint8)
-
         # Transform back to PIL images
         output_new = Image.fromarray(output_cv2)
+
         output2 = Image.new('RGBA', (background.width, background.height), (255, 255, 255, 0))
         output2.paste(background, (0, 0))
         output2.paste(output_new, (0, 0), output_new)
 
-        output2 = output2.convert("RGBA")
-        output2.save('final_output.png')
-        output2 = output2.convert("RGB")
-
         return PilImage(output2)
 
-
-
-
     def save(self, filename):
-        self._image.save(filename)
+        self._image.convert("RGB").save(filename)

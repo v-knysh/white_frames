@@ -6,7 +6,7 @@ import logging
 from frames.expand_canvas import ExpandCanvasParamsFactory
 from frames.image import PilImage
 from frames.image_processing import FV_BORDER_THICKNESS_MULTIPLIER, NotAnImageException
-from frames.processors import ImageProcessorFactory
+from frames.processors import WhiteFrameProcessorFactory, ShashlikManProcessorFactory
 
 logger = logging.getLogger('')
 
@@ -28,23 +28,35 @@ parser.add_argument(
     dest='multiplier',
 )
 
+parser.add_argument(
+    '-a', '--action',
+    type=str,
+    help='Choose target action',
+    default='white_frame',
+    choices=['white_frame', 'shashlik_man'],
+)
 
-def process_file(content_path, multiplier, destination=None):
+
+def process_file(content_path, multiplier, action, destination=None):
     logger.info(f"processing file '{content_path}'")
     try:
         image = PilImage.open(content_path)
     except NotAnImageException:
         logger.warning(f"cannot process file {content_path}. it is not an image")
         return
-    processor = ImageProcessorFactory(ExpandCanvasParamsFactory()).processor(image)
-    image_with_frame = processor.image_with_frame(border_thickness_multiplier=multiplier)
+    if action == "white_frame":
+        processor = WhiteFrameProcessorFactory(ExpandCanvasParamsFactory()).processor(image)
+    elif action == "shashlik_man":
+        processor = ShashlikManProcessorFactory().processor(image)
+
+    image_with_frame = processor.modified_image(border_thickness_multiplier=multiplier)
     if destination is None:
         file_name, file_extension = os.path.splitext(content_path)
-        destination = f'{file_name}-square.{file_extension}'
+        destination = f'{file_name}-square.{file_extension.replace(".", "")}'
     image_with_frame.save(destination)
 
 
-def process_dir(content_path, multiplier):
+def process_dir(content_path, multiplier, action):
     logger.info(f"processing dir '{content_path}'")
     result_dir_name = os.path.join(content_path, 'square_images')
     logger.info(f'putting results to {result_dir_name}')
@@ -53,16 +65,17 @@ def process_dir(content_path, multiplier):
     for file in os.listdir(content_path):
         root_file = os.path.join(content_path, file)
         if os.path.isfile(root_file):
-            process_file(root_file, multiplier, destination=os.path.join(result_dir_name, file))
+            process_file(root_file, multiplier, action, destination=os.path.join(result_dir_name, file))
 
 
 def run_cli():
     args = parser.parse_args()
     content_path = args.path
     multiplier = args.multiplier
+    action = args.action
 
     if os.path.isfile(content_path):
-        process_file(content_path, multiplier)
+        process_file(content_path, multiplier, action)
 
     elif os.path.isdir(content_path):
-        process_dir(content_path, multiplier)
+        process_dir(content_path, multiplier, action)
