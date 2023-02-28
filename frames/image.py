@@ -99,19 +99,16 @@ class PilImage(ImageABC):
         new_image.paste(self._image, (coord_w, coord_h))
         return PilImage(new_image)
     
-    def distort(self) -> 'ImageABC':
-        background = Image.open("16400267487971.jpg")
+    def distort(self, background_path, corners) -> 'ImageABC':
+        background = Image.open(background_path)
         background = background.convert("RGBA")
         monitor_image = self._image.convert("RGBA")
 
         output = Image.new('RGBA', (background.width, background.height), (255, 255, 255, 0))
 
         draw = ImageDraw.Draw(output)
-        
-        tl_dst = (550, 433)
-        tr_dst = (864, 404)
-        br_dst = (877, 644)
-        bl_dst = (555, 622)
+
+        tl_dst, tr_dst, br_dst, bl_dst = corners
 
         draw.polygon([tl_dst, tr_dst, br_dst, bl_dst], outline=(0,0,0))
         

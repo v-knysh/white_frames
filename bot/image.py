@@ -11,13 +11,11 @@ from aiogram.dispatcher import FSMContext
 from aiogram.utils.callback_data import CallbackData
 
 from bot.bot import dp, bot
-from frames.expand_canvas import ExpandCanvasParamsFactory
+from frames.actions import ActionABC, get_action, actions
 from frames.image import PilImage
-from frames.image_processing import FV_BORDER_THICKNESS_MULTIPLIER
-from frames.processors import ShashlikManProcessorFactory, WhiteFrameProcessorFactory
 
 
-file_id_action_callback_data = CallbackData("i", "file_id", "action")
+file_id_action_callback_data = CallbackData("i", "file_id", "action_code")
 
 class InMemoryStorage():
     def __init__(self):
@@ -38,16 +36,12 @@ class InMemoryStorage():
     
 storage = InMemoryStorage()
 
-actions = {
-    'wf': "White Frame",
-    'sm': "Shashlik Man",
-}
 
-
-def _get_keyboard(file_id):
-    return InlineKeyboardMarkup().row(
-        InlineKeyboardButton(text=actions['wf'], callback_data=file_id_action_callback_data.new(file_id, "wf")),
-        InlineKeyboardButton(text=actions['sm'], callback_data=file_id_action_callback_data.new(file_id, "sm"))
+def _get_keyboard(file_id, actions):
+    return InlineKeyboardMarkup().row(*(
+        InlineKeyboardButton(text=a.name, callback_data=file_id_action_callback_data.new(file_id, a.code))
+        for a in actions
+    )
     )
 
 @dp.message_handler(content_types=['photo', 'document'], state="*")
@@ -58,40 +52,31 @@ async def image_action_handler(message: types.Message):
     if message.document:
         file_id = message.document.file_id
     short_file_id = storage.save(file_id)
-    
-    
-    print(file_id)
-    await message.reply("Received image. Which action to perform?", reply_markup=_get_keyboard(short_file_id))
-    # await ImageActionForm.file_id.set()
-    # async with state.proxy() as data:
-    #     data['name'] = message.text
+
+    await message.reply("Received image. Which action to perform?", reply_markup=_get_keyboard(short_file_id, actions))
     return
 
 @dp.callback_query_handler(file_id_action_callback_data.filter())
 async def perform_action(callback: types.CallbackQuery, callback_data):
     
     file_id = storage.pop(callback_data['file_id'])
-    action = actions[callback_data['action']]
+    action_code = callback_data['action_code']
     
     file = await bot.get_file(file_id)
     origin_image = await bot.download_file(file.file_path)
     origin_image.seek(0)
 
     image = PilImage.open(origin_image)
-    if action == "White Frame":
-        processor = WhiteFrameProcessorFactory(ExpandCanvasParamsFactory()).processor(image)
-    elif action == "Shashlik Man":
-        processor = ShashlikManProcessorFactory().processor(image)
-    else:
-        raise NotImplementedError
-    image_with_frame = processor.modified_image(border_thickness_multiplier=FV_BORDER_THICKNESS_MULTIPLIER)
+    action: ActionABC = get_action(action_code)
+    processor = action.processor(image)
+    modified_image = processor.modified_image()
     response = BytesIO()
     response.name = "result.jpg"
-    image_with_frame.save(response)
+    modified_image.save(response)
     response.seek(0)
 
     await bot.edit_message_text(
-        f'Received image. Performing {action}', 
+        f'Received image. Performing {action.name}', 
         callback.from_user.id,
         callback.message.message_id,
         reply_markup=None,

@@ -37,7 +37,7 @@ class ImageABC(ABC):
         pass
 
     @abstractmethod
-    def distort(self) -> 'ImageABC':
+    def distort(self, background_path, corners) -> 'ImageABC':
         pass
 
 class NotAnImageException(BaseException):
