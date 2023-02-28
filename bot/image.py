@@ -5,10 +5,10 @@ from typing import Optional
 
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.callback_data import CallbackData
+from aiogram.utils.exceptions import MessageNotModified
 
 import settings
 
@@ -19,6 +19,9 @@ from frames.image import PilImage
 
 file_id_action_callback_data = CallbackData("i", "file_id", "action_code")
 
+class NotInStorageException(Exception):
+    pass
+
 class InMemoryStorage():
     def __init__(self):
         self._storage = {}
@@ -28,9 +31,15 @@ class InMemoryStorage():
         self._storage[key] = data
         return key
     
-    def pop(self, key):
+    def get(self, key):
         if key in self._storage:
-            return self._storage.pop(key)
+            return self._storage.get(key)
+        else:
+            raise Exception(f"{key} not in storage")
+    
+    def get(self, key):
+        if key in self._storage:
+            return self._storage.get(key)
         else:
             raise Exception(f"{key} not in storage")
 
@@ -61,15 +70,26 @@ async def image_action_handler(message: types.Message):
 @dp.callback_query_handler(file_id_action_callback_data.filter())
 async def perform_action(callback: types.CallbackQuery, callback_data):
     
-    file_id = storage.pop(callback_data['file_id'])
+    file_id = storage.get(callback_data['file_id'])
     action_code = callback_data['action_code']
-    
+    action: ActionABC = get_action(action_code)
+
+    try:
+        await bot.edit_message_text(
+            f'Received image. Performing {action.name}', 
+            callback.from_user.id,
+            callback.message.message_id,
+            reply_markup=None,
+        )
+    except MessageNotModified:
+        # message already answered
+        return 
+
     file = await bot.get_file(file_id)
     origin_image = await bot.download_file(file.file_path)
     origin_image.seek(0)
 
     image = PilImage.open(origin_image)
-    action: ActionABC = get_action(action_code)
     processor = action.processor(image)
     modified_image = processor.modified_image()
     response = BytesIO()
@@ -77,12 +97,6 @@ async def perform_action(callback: types.CallbackQuery, callback_data):
     modified_image.save(response)
     response.seek(0)
 
-    await bot.edit_message_text(
-        f'Received image. Performing {action.name}', 
-        callback.from_user.id,
-        callback.message.message_id,
-        reply_markup=None,
-    )
     await callback.message.answer_document(types.InputFile(response))
     
     for supervisor in settings.TG_SUPERVISORS_LIST:
@@ -99,8 +113,9 @@ async def perform_action(callback: types.CallbackQuery, callback_data):
             chat_id=supervisor,
             document=types.InputFile(response),
         )
-        
-        await callback.answer()
+    
+    file_id = storage.get(callback_data['file_id'])
+    await callback.answer()
     return
 
 
