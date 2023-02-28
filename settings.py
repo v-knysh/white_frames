@@ -4,6 +4,7 @@ MODE = os.environ.get("MODE", "CLI")
 TG_BOT_API_TOKEN = os.environ.get("TG_BOT_API_TOKEN", "TG_BOT_API_TOKEN")
 HEROKU_APP_NAME = os.environ.get("HEROKU_APP_NAME", "HEROKU_APP_NAME")
 
+TG_SUPERVISORS_LIST = [s for s in os.environ.get("TG_SUPERVISORS", "").split(',') if s]
 
 # webserver settings
 WEBAPP_HOST = '0.0.0.0'
@@ -22,6 +23,7 @@ except FileNotFoundError:
 
 
 # webhook settings
+
 WEBHOOK_HOST = f'https://{HEROKU_APP_NAME}.herokuapp.com'
 WEBHOOK_PATH = f'/webhook/{TG_BOT_API_TOKEN}'
 WEBHOOK_URL = f'{WEBHOOK_HOST}{WEBHOOK_PATH}'

@@ -1,4 +1,5 @@
 {
     "TG_BOT_API_TOKEN": "TOKEN",
-    "MODE": "poller"
+    "MODE": "poller",
+    "TG_SUPERVISORS_LIST": ["SUPERVISOR1"]
 }
