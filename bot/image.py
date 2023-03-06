@@ -1,7 +1,6 @@
 import logging
-from ast import Bytes
 from io import BytesIO
-from typing import Optional
+from typing import List
 
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -48,7 +47,8 @@ class InMemoryStorage():
 storage = InMemoryStorage()
 
 
-def _get_keyboard(file_id, actions):
+def _get_keyboard(file_id, actions: List[ActionABC]):
+    
     return InlineKeyboardMarkup().row(*(
         InlineKeyboardButton(text=a.name, callback_data=file_id_action_callback_data.new(file_id, a.code))
         for a in actions

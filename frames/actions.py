@@ -1,3 +1,4 @@
+from typing import List
 from frames.expand_canvas import ExpandCanvasParamsFactory
 from frames.image_processing import ExpandCanvasParamsType
 from frames.processors import (
@@ -8,6 +9,8 @@ from frames.processors import (
 )
 
 class ActionABC:    
+    code: str
+    name: str
     def processor(self, image):
         pass
 
@@ -20,13 +23,13 @@ class WhiteFrameAction(ActionABC):
         rate = image.height() / image.width()
         params_factory = ExpandCanvasParamsFactory()
         if rate > 1.1:
-            params = params_factory.params(self._image, ExpandCanvasParamsType.CENTER)
+            params = params_factory.params(image, ExpandCanvasParamsType.CENTER)
             return PortraitImageProcessor(image, params)
         elif rate < 0.9:
-            params = params_factory.params(self._image, ExpandCanvasParamsType.GOLDEN_RATIO)
+            params = params_factory.params(image, ExpandCanvasParamsType.GOLDEN_RATIO)
             return LandscapeImageProcessor(image, params)
         else:
-            params = params_factory.params(self._image, ExpandCanvasParamsType.CENTER)
+            params = params_factory.params(image, ExpandCanvasParamsType.CENTER)
             return SquareImageProcessor(image, params)
         
 class ElonAction(ActionABC):
@@ -59,7 +62,8 @@ class ShashlikManAction(ActionABC):
         return DistortImageProcessor(image, background_path, corners)
     
     
-actions: ActionABC = [WhiteFrameAction(), ShashlikManAction(), ElonAction()]
+actions: List[ActionABC] = [WhiteFrameAction(), ShashlikManAction(), ElonAction()]
+
 
 def get_action(action_code):
     for a in actions:
