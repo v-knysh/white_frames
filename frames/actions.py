@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from frames.expand_canvas import ExpandCanvasParamsFactory
 from frames.image_processing import ExpandCanvasParamsType
 from frames.processors import (
@@ -31,38 +31,70 @@ class WhiteFrameAction(ActionABC):
         else:
             params = params_factory.params(image, ExpandCanvasParamsType.CENTER)
             return SquareImageProcessor(image, params)
+
+
+class DistortImageAction(ActionABC):
+    background_path: str
+    corners: List[Tuple[int, int]]
+    def processor(self, image):
+        return DistortImageProcessor(image, self.background_path, self.corners)
+
         
-class ElonAction(ActionABC):
+class ElonAction(DistortImageAction):
     code = "em"
     name = "Elon"
-    
-    def processor(self, image):
-        background_path = "elon.jpg"
-        corners = [
-            (403, 59),
-            (554, 72),
-            (541, 208),
-            (402, 174),
-        ]
-        return DistortImageProcessor(image, background_path, corners)
+    background_path = "backgrounds/elon.jpg"
+    corners = [
+        (403, 59),
+        (554, 72),
+        (541, 208),
+        (402, 174),
+    ]    
 
 
-class ShashlikManAction(ActionABC):
+class ShashlikManAction(DistortImageAction):
     code = "sm"
     name = "Shashlik Man"
+    background_path = "backgrounds/shashlik.jpg"
+    corners = [
+        (550, 433),
+        (864, 404),
+        (877, 644),
+        (555, 622),
+    ]    
+
+
+
+class MilitaryShashlikAction(DistortImageAction):
+    code = "milsm"
+    name = "Military Shashlik Man"
+    background_path = "backgrounds/military_shashlik.jpg"
+    corners = [
+        (550, 433),
+        (864, 404),
+        (877, 644),
+        (555, 622),
+    ]    
+
+class KlitchkoAction(DistortImageAction):
+    code = "kl"
+    name = "Shashlik Man"
+    background_path = "backgrounds/klitchko.jpeg"
+    corners = [
+        (141, 219),
+        (365, 223),
+        (364, 383),
+        (136, 413),
+    ]        
     
-    def processor(self, image):
-        background_path = "16400267487971.jpg"
-        corners = [
-            (550, 433),
-            (864, 404),
-            (877, 644),
-            (555, 622),
-        ]
-        return DistortImageProcessor(image, background_path, corners)
+actions: List[ActionABC] = [
+    WhiteFrameAction(), 
+    ShashlikManAction(), 
+    MilitaryShashlikAction(),
+    ElonAction(),
+    KlitchkoAction()
     
-    
-actions: List[ActionABC] = [WhiteFrameAction(), ShashlikManAction(), ElonAction()]
+]
 
 
 def get_action(action_code):

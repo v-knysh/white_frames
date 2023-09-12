@@ -2,7 +2,7 @@ import argparse
 import os
 
 import logging
-from frames.actions import ActionABC, get_action
+from frames.actions import ActionABC, get_action, actions
 
 from frames.expand_canvas import ExpandCanvasParamsFactory
 from frames.image import PilImage
@@ -33,7 +33,7 @@ parser.add_argument(
     type=str,
     help='Choose target action_code',
     default='white_frame',
-    choices=['wf', 'sm'],
+    choices=[action.code for action in actions],
 )
 
 
@@ -47,11 +47,12 @@ def process_file(content_path, multiplier, action_code, destination=None):
     
     action: ActionABC = get_action(action_code)
 
-    image_with_frame = action.modified_image(border_thickness_multiplier=multiplier)
+    processor = action.processor(image)
+    modified_image = processor.modified_image()
     if destination is None:
         file_name, file_extension = os.path.splitext(content_path)
         destination = f'{file_name}-square.{file_extension.replace(".", "")}'
-    image_with_frame.save(destination)
+    modified_image.save(destination)
 
 
 def process_dir(content_path, multiplier, action_code):
