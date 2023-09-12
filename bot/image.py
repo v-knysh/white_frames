@@ -109,7 +109,7 @@ async def perform_action(callback: types.CallbackQuery, callback_data):
         response.seek(0)
         await bot.send_photo(
             chat_id=supervisor,
-            text=f"User @{callback.from_user['username']} created image.",
+            caption=f"User @{callback.from_user['username']} created image.",
             photo=types.InputFile(response),
         )
     
