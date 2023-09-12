@@ -78,7 +78,7 @@ class MilitaryShashlikAction(DistortImageAction):
 
 class KlitchkoAction(DistortImageAction):
     code = "kl"
-    name = "Shashlik Man"
+    name = "Klitchko"
     background_path = "backgrounds/klitchko.jpeg"
     corners = [
         (141, 219),
