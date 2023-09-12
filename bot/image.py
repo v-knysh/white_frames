@@ -97,21 +97,20 @@ async def perform_action(callback: types.CallbackQuery, callback_data):
     modified_image.save(response)
     response.seek(0)
 
-    await callback.message.answer_document(types.InputFile(response))
+    if action.answer_type == "document":
+        await callback.message.answer_document(types.InputFile(response))
+    else:
+        await callback.message.answer_photo(types.InputFile(response))
     
     for supervisor in settings.TG_SUPERVISORS_LIST:
-        await bot.send_message(
-            chat_id=supervisor,
-            text=f"User @{callback.from_user['username']} created image.",
-        )
-        
         response = BytesIO()
         response.name = "result.jpg"
         modified_image.save(response)
         response.seek(0)
-        await bot.send_document(
+        await bot.send_photo(
             chat_id=supervisor,
-            document=types.InputFile(response),
+            text=f"User @{callback.from_user['username']} created image.",
+            photo=types.InputFile(response),
         )
     
     file_id = storage.get(callback_data['file_id'])

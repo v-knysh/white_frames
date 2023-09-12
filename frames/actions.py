@@ -11,6 +11,7 @@ from frames.processors import (
 class ActionABC:    
     code: str
     name: str
+    answer_type: str = 'image'
     def processor(self, image):
         pass
 
@@ -18,6 +19,7 @@ class ActionABC:
 class WhiteFrameAction(ActionABC):
     code = "wf"
     name = "White Frame"
+    answer_type = 'document'
 
     def processor(self, image):
         rate = image.height() / image.width()
