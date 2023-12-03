@@ -47,10 +47,10 @@ class ElonAction(DistortImageAction):
     name = "Elon"
     background_path = "backgrounds/elon.jpg"
     corners = [
-        (403, 59),
-        (554, 72),
-        (541, 208),
-        (402, 174),
+        (1911, 286),
+        (2628, 338),
+        (2567, 989),
+        (1905, 825),
     ]    
 
 
