@@ -59,10 +59,10 @@ class ShashlikManAction(DistortImageAction):
     name = "Shashlik Man"
     background_path = "backgrounds/shashlik.jpg"
     corners = [
-        (550, 433),
-        (864, 404),
-        (877, 644),
-        (555, 622),
+        (1175, 524),
+        (1851, 456),
+        (1877, 979),
+        (1189, 927),
     ]    
 
 
