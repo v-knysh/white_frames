@@ -48,12 +48,15 @@ storage = InMemoryStorage()
 
 
 def _get_keyboard(file_id, actions: List[ActionABC]):
-    
-    return InlineKeyboardMarkup().row(*(
+    buttons = [
         InlineKeyboardButton(text=a.name, callback_data=file_id_action_callback_data.new(file_id, a.code))
         for a in actions
+    ]
+    return InlineKeyboardMarkup(
+        buttons[:len(buttons)/2],
+        buttons[len(buttons)/2:],
     )
-    )
+
 
 @dp.message_handler(content_types=['photo', 'document'], state="*")
 async def image_action_handler(message: types.Message):
