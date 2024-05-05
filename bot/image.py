@@ -52,10 +52,14 @@ def _get_keyboard(file_id, actions: List[ActionABC]):
         InlineKeyboardButton(text=a.name, callback_data=file_id_action_callback_data.new(file_id, a.code))
         for a in actions
     ]
-    return InlineKeyboardMarkup(
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add([
         buttons[:int(len(buttons)/2)],
-        buttons[int(len(buttons)/2):],
-    )
+    ])
+    keyboard.add([
+        buttons[int(len(buttons)/2):],    
+    ])
+    
 
 
 @dp.message_handler(content_types=['photo', 'document'], state="*")
