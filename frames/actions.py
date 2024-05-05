@@ -87,6 +87,17 @@ class KlitchkoAction(DistortImageAction):
         (365, 223),
         (364, 383),
         (136, 413),
+    ]    
+    
+class CatMusicAction(DistortImageAction):
+    code = "cm"
+    name = "Cat Music"
+    background_path = "backgrounds/catmusic.jpg"
+    corners = [
+        (1152, 89),
+        (1554, -12),
+        (1764, 731),
+        (1312, 811),
     ]        
     
 actions: List[ActionABC] = [
@@ -94,8 +105,8 @@ actions: List[ActionABC] = [
     ShashlikManAction(), 
     MilitaryShashlikAction(),
     ElonAction(),
-    KlitchkoAction()
-    
+    KlitchkoAction(),
+    CatMusicAction(),
 ]
 
 
