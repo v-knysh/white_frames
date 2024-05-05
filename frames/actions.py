@@ -94,10 +94,10 @@ class CatMusicAction(DistortImageAction):
     name = "Cat Music"
     background_path = "backgrounds/catmusic.jpg"
     corners = [
-        (1152, 89),
-        (1554, -12),
-        (1764, 731),
-        (1312, 811),
+        (1232, 131),
+        (1635, 23),
+        (1850, 760),
+        (1396, 866),
     ]        
     
 actions: List[ActionABC] = [
