@@ -53,10 +53,10 @@ def _get_keyboard(file_id, actions: List[ActionABC]):
         for a in actions
     ]
     keyboard = InlineKeyboardMarkup()
-    keyboard.add([
+    keyboard.row(*[
         buttons[:int(len(buttons)/2)],
     ])
-    keyboard.add([
+    keyboard.row(*[
         buttons[int(len(buttons)/2):],    
     ])
     return keyboard
