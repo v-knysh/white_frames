@@ -105,7 +105,7 @@ class BezuhlaAction(DistortImageAction):
     name = "Bezuhla"
     background_path = "backgrounds/bezuhla.jpg"
     corners = [
-        (438, 462),
+        (462, 438),
         (603, 381),
         (735, 652),
         (603, 734),
