@@ -99,6 +99,17 @@ class CatMusicAction(DistortImageAction):
         (1850, 760),
         (1396, 866),
     ]        
+
+class BezuhlaAction(DistortImageAction):
+    code = "bz"
+    name = "Bezuhla"
+    background_path = "backgrounds/bezuhla.jpg"
+    corners = [
+        (438, 462),
+        (603, 381),
+        (735, 652),
+        (603, 734),
+    ]        
     
 actions: List[ActionABC] = [
     WhiteFrameAction(), 
@@ -107,6 +118,7 @@ actions: List[ActionABC] = [
     ElonAction(),
     KlitchkoAction(),
     CatMusicAction(),
+    BezuhlaAction(),
 ]
 
 
