@@ -151,3 +151,9 @@ class PilImage(ImageABC):
 
     def save(self, filename):
         self._image.convert("RGB").save(filename)
+    
+    def crop(self, left, top, right, bottom):
+        box = (left, top, right, bottom)
+        print(box)
+        return PilImage(self._image.crop(box))
+    
