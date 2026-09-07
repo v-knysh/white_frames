@@ -20,6 +20,9 @@ class TestImage(ImageABC):
     def save(self, filename):
         pass
 
+    def distort(self, background_path, corners) -> ImageABC:
+        pass
+
     def __repr__(self):
         return f"<TestImage height={self._height} width={self._width}>"
 
