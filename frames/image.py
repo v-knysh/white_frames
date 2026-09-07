@@ -1,12 +1,6 @@
-from io import BytesIO, StringIO
 import cv2
 import numpy as np
 from PIL import Image, UnidentifiedImageError, ExifTags, ImageDraw
-
-import pprint
-
-import aiohttp
-import asyncio
 
 from frames.image_processing import (
     ImageABC,
@@ -17,34 +11,7 @@ from frames.image_processing import (
 
 class PilImage(ImageABC):
     def __init__(self, image: Image.Image):
-        # loop = asyncio.get_event_loop()
-        # image = loop.run_until_complete(self.get_image())
-        # # raise Exception(image)
         self._image = image.convert("RGBA")
-        # self._image = image
-
-
-
-        
-    async def get_image(self):     
-        async with aiohttp.request(
-                "POST", "https://tweetpik.com/api/images", 
-                json={"tweetId":"1625224979884216321"},
-                headers={
-                    "Authorization": "fb9390bf-3817-49fd-8690-b9e42eff8964"
-                }
-                ) as response:
-            image_url = (await response.json())['url']
-        async with aiohttp.request('get', image_url) as response:
-            image = Image.open(BytesIO(await response.read()))
-            width, height = image.size
-            new_image = Image.new("RGB", (width, height), (255,255,255))
-            new_image.paste(image, (0, 0))
-            top = (height - height * 0.6) / 2
-            bottom = height - top
-            
-            return new_image.crop((0, top, width, bottom))
-
 
     @classmethod
     def open(cls, filename):
@@ -154,6 +121,5 @@ class PilImage(ImageABC):
     
     def crop(self, left, top, right, bottom):
         box = (left, top, right, bottom)
-        print(box)
         return PilImage(self._image.crop(box))
     
