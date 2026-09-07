@@ -103,7 +103,7 @@ class PilImage(ImageABC):
         cnts = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]
         mask = np.zeros_like(output_cv2)
-        mask = cv2.drawContours(mask, cnts, 0, (255, 255, 25, 255), cv2.FILLED)
+        mask = cv2.drawContours(mask, cnts, 0, (255, 255, 255, 255), cv2.FILLED)
         mask = mask.all(axis=2)
         
         output_cv2[mask, :] = warped[mask, :]

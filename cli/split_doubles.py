@@ -36,27 +36,36 @@ parser.add_argument(
                     dest="c2"
                     )
 
+parser.add_argument(
+    "-r", "--reverse",
+    action="store_true",
+    help="save the left image as -2 and the right image as -1 (default: left=-1, right=-2)",
+    dest="reverse",
+)
 
-def process_file(content_path, c1, c2):
+
+def process_file(content_path, c1, c2, reverse=False):
     logger.info(f"processing file '{content_path}'")
     try:
         image = PilImage.open(content_path)
     except NotAnImageException:
         logger.warning(f"cannot process file {content_path}. it is not an image")
         return
-    
+
     file_name, file_extension = os.path.splitext(content_path)
-    
-    destination1 = f'{file_name}-1.{file_extension.replace(".", "")}'
+    extension = file_extension.replace(".", "")
+    left_suffix, right_suffix = ("2", "1") if reverse else ("1", "2")
+
+    destination1 = f'{file_name}-{left_suffix}.{extension}'
     modified_image_1 = image.crop(0, 0, c1, image.height())
     modified_image_1.save(destination1)
-    
-    destination2 = f'{file_name}-2.{file_extension.replace(".", "")}'
+
+    destination2 = f'{file_name}-{right_suffix}.{extension}'
     modified_image_2 = image.crop(c2, 0, image.width(), image.height())
     modified_image_2.save(destination2)
-        
 
-def process_dir(content_path, c1, c2):
+
+def process_dir(content_path, c1, c2, reverse=False):
     logger.info(f"processing dir '{content_path}'")
     result_dir_name = os.path.join(content_path, 'split_halves')
     logger.info(f'putting results to {result_dir_name}')
@@ -65,7 +74,7 @@ def process_dir(content_path, c1, c2):
     for file in os.listdir(content_path):
         root_file = os.path.join(content_path, file)
         if os.path.isfile(root_file):
-            process_file(root_file, c1, c2)
+            process_file(root_file, c1, c2, reverse)
 
 
 def run_cli():
@@ -73,14 +82,15 @@ def run_cli():
     content_path = args.path
     c1 = int(args.c1)
     c2 = int(args.c2)
+    reverse = args.reverse
 
     print(type(c1), c1)
-    
+
     if os.path.isfile(content_path):
-        process_file(content_path, c1, c2)
+        process_file(content_path, c1, c2, reverse)
 
     elif os.path.isdir(content_path):
-        process_dir(content_path, c1, c2)
+        process_dir(content_path, c1, c2, reverse)
 
 if __name__ == "__main__":
     run_cli()
