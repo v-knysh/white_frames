@@ -35,12 +35,6 @@ class InMemoryStorage():
             return self._storage.get(key)
         else:
             raise Exception(f"{key} not in storage")
-    
-    def get(self, key):
-        if key in self._storage:
-            return self._storage.get(key)
-        else:
-            raise Exception(f"{key} not in storage")
 
 
     

@@ -1,9 +1,13 @@
 import settings
-from cli import run_cli
+from cli.cli import run_cli
 
 
 if settings.MODE == "CLI":
     run_cli()
+
+if settings.MODE == "split_doubles":
+    from cli.split_doubles import run_cli as run_split_doubles_cli
+    run_split_doubles_cli()
 
 if settings.MODE == 'webhook':
     print("running mode webhook")

@@ -18,4 +18,7 @@ async def send_welcome(message: types.Message):
     """
     This handler will be called when user sends `/start` or `/help` command
     """
-    await message.reply("Hi!\nI'm EchoBot!\nPowered by aiogram.")
+    await message.reply(
+        "Hi! Send me a photo and I'll let you pick what to do with it — "
+        "add a white frame or drop it into one of the meme templates."
+    )
