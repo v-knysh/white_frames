@@ -1,40 +1,36 @@
 import logging
 
-from aiogram import Bot, types, filters
-from aiogram.contrib.middlewares.logging import LoggingMiddleware
-from aiogram.dispatcher import Dispatcher
-from aiogram.utils.executor import start_webhook
+from aiohttp import web
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+
 from settings import (
-    TG_BOT_API_TOKEN,
-    HEROKU_APP_NAME,
     WEBHOOK_URL,
     WEBHOOK_PATH,
     WEBAPP_HOST,
-    WEBAPP_PORT
+    WEBAPP_PORT,
 )
 
-from bot.bot import bot, dp
-
-dp.middleware.setup(LoggingMiddleware())
-
-
-async def on_startup(dp):
-    logging.warning(
-        'Starting connection. ')
-    await bot.set_webhook(WEBHOOK_URL,drop_pending_updates=True)
+import bot  # noqa: F401  -- registers message/callback handlers
+from bot.bot import bot as tg_bot, dp
 
 
-async def on_shutdown(dp):
+async def on_startup(bot):
+    logging.warning('Starting connection. ')
+    await bot.set_webhook(WEBHOOK_URL, drop_pending_updates=True)
+
+
+async def on_shutdown(bot):
     logging.warning('Bye! Shutting down webhook connection')
 
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    start_webhook(
-        dispatcher=dp,
-        webhook_path=WEBHOOK_PATH,
-        skip_updates=True,
-        on_startup=on_startup,
-        host=WEBAPP_HOST,
-        port=WEBAPP_PORT,
-    )
+
+    dp.startup.register(on_startup)
+    dp.shutdown.register(on_shutdown)
+
+    app = web.Application()
+    SimpleRequestHandler(dispatcher=dp, bot=tg_bot).register(app, path=WEBHOOK_PATH)
+    setup_application(app, dp, bot=tg_bot)
+
+    web.run_app(app, host=WEBAPP_HOST, port=WEBAPP_PORT)

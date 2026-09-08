@@ -2,12 +2,12 @@ import logging
 from io import BytesIO
 from typing import List
 
-from aiogram import types
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.dispatcher.filters import Text
-from aiogram.dispatcher import FSMContext
-from aiogram.utils.callback_data import CallbackData
-from aiogram.utils.exceptions import MessageNotModified
+from aiogram import types, F
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, BufferedInputFile
+from aiogram.filters import Command
+from aiogram.filters.callback_data import CallbackData
+from aiogram.fsm.context import FSMContext
+from aiogram.exceptions import TelegramBadRequest
 
 import settings
 
@@ -16,7 +16,10 @@ from frames.actions import ActionABC, get_action, actions
 from frames.image import PilImage
 
 
-file_id_action_callback_data = CallbackData("i", "file_id", "action_code")
+class FileActionCallback(CallbackData, prefix="i"):
+    file_id: str
+    action_code: str
+
 
 class NotInStorageException(Exception):
     pass
@@ -24,12 +27,12 @@ class NotInStorageException(Exception):
 class InMemoryStorage():
     def __init__(self):
         self._storage = {}
-    
+
     def save(self, data):
         key = data[-32:]
         self._storage[key] = data
         return key
-    
+
     def get(self, key):
         if key in self._storage:
             return self._storage.get(key)
@@ -37,23 +40,24 @@ class InMemoryStorage():
             raise Exception(f"{key} not in storage")
 
 
-    
+
 storage = InMemoryStorage()
 
 
 def _get_keyboard(file_id, actions: List[ActionABC]):
     buttons = [
-        InlineKeyboardButton(text=a.name, callback_data=file_id_action_callback_data.new(file_id, a.code))
+        InlineKeyboardButton(
+            text=a.name,
+            callback_data=FileActionCallback(file_id=file_id, action_code=a.code).pack(),
+        )
         for a in actions
     ]
-    keyboard = InlineKeyboardMarkup()
-    keyboard.row(*buttons[:int(len(buttons)/2)])
-    keyboard.row(*buttons[int(len(buttons)/2):])
-    return keyboard
-    
+    mid = int(len(buttons) / 2)
+    return InlineKeyboardMarkup(inline_keyboard=[buttons[:mid], buttons[mid:]])
 
 
-@dp.message_handler(content_types=['photo', 'document'], state="*")
+
+@dp.message(F.photo | F.document)
 async def image_action_handler(message: types.Message):
     logging.warning(f'Recieved a image from {message.from_user}')
     if message.photo:
@@ -65,23 +69,23 @@ async def image_action_handler(message: types.Message):
     await message.reply("Received image. Which action to perform?", reply_markup=_get_keyboard(short_file_id, actions))
     return
 
-@dp.callback_query_handler(file_id_action_callback_data.filter())
-async def perform_action(callback: types.CallbackQuery, callback_data):
-    
-    file_id = storage.get(callback_data['file_id'])
-    action_code = callback_data['action_code']
+@dp.callback_query(FileActionCallback.filter())
+async def perform_action(callback: types.CallbackQuery, callback_data: FileActionCallback):
+
+    file_id = storage.get(callback_data.file_id)
+    action_code = callback_data.action_code
     action: ActionABC = get_action(action_code)
 
     try:
         await bot.edit_message_text(
-            f'Received image. Performing {action.name}', 
-            callback.from_user.id,
-            callback.message.message_id,
+            text=f'Received image. Performing {action.name}',
+            chat_id=callback.from_user.id,
+            message_id=callback.message.message_id,
             reply_markup=None,
         )
-    except MessageNotModified:
-        # message already answered
-        return 
+    except TelegramBadRequest:
+        # message already answered / not modified
+        return
 
     file = await bot.get_file(file_id)
     origin_image = await bot.download_file(file.file_path)
@@ -95,11 +99,12 @@ async def perform_action(callback: types.CallbackQuery, callback_data):
     modified_image.save(response)
     response.seek(0)
 
+    result_file = BufferedInputFile(response.read(), filename="result.jpg")
     if action.answer_type == "document":
-        await callback.message.answer_document(types.InputFile(response))
+        await callback.message.answer_document(result_file)
     else:
-        await callback.message.answer_photo(types.InputFile(response))
-    
+        await callback.message.answer_photo(result_file)
+
     for supervisor in settings.TG_SUPERVISORS_LIST:
         response = BytesIO()
         response.name = "result.jpg"
@@ -107,18 +112,17 @@ async def perform_action(callback: types.CallbackQuery, callback_data):
         response.seek(0)
         await bot.send_photo(
             chat_id=supervisor,
-            caption=f"User @{callback.from_user['username']} created image.",
-            photo=types.InputFile(response),
+            caption=f"User @{callback.from_user.username} created image.",
+            photo=BufferedInputFile(response.read(), filename="result.jpg"),
         )
-    
-    file_id = storage.get(callback_data['file_id'])
+
     await callback.answer()
     return
 
 
 
-@dp.message_handler(state='*', commands='cancel')
-@dp.message_handler(Text(equals='cancel', ignore_case=True), state='*')
+@dp.message(Command("cancel"))
+@dp.message(F.text.casefold() == "cancel")
 async def cancel_handler(message: types.Message, state: FSMContext):
     """
     Allow user to cancel any action
@@ -131,7 +135,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     logging.info('Cancelling state %r', current_state)
     # Cancel state and inform user about it
 
-    await state.finish()
+    await state.clear()
     # And remove keyboard (just in case)
 
     await message.reply('Cancelled.', reply_markup=types.ReplyKeyboardRemove())

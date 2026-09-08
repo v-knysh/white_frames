@@ -1,6 +1,7 @@
 import logging
 
-from aiogram import Bot, Dispatcher, types, filters
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import Command
 
 from settings import TG_BOT_API_TOKEN
 
@@ -10,10 +11,10 @@ logging.basicConfig(level=logging.INFO)
 
 # Initialize bot and dispatcher
 bot = Bot(token=TG_BOT_API_TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher()
 
 
-@dp.message_handler(commands=['start', 'help'])
+@dp.message(Command("start", "help"))
 async def send_welcome(message: types.Message):
     """
     This handler will be called when user sends `/start` or `/help` command

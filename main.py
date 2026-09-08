@@ -16,6 +16,6 @@ if settings.MODE == 'webhook':
 
 if settings.MODE == "poller":
     print("running mode poller")
-    from aiogram import executor
-    from bot.bot import dp
-    executor.start_polling(dp, skip_updates=True)
+    import bot  # noqa: F401  -- registers message/callback handlers
+    from bot.bot import bot as tg_bot, dp
+    dp.run_polling(tg_bot, drop_pending_updates=True)
